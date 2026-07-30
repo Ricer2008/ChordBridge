@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="brushed">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ChordBridge — 吉他谱多维度转换与预览</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo"><span class="mark">🎸</span> ChordBridge</div>
+    <div class="subtitle">简谱 · 五线谱 · 六线谱 · 和弦谱 智能转换 + MIDI 演奏</div>
+    <div class="topbar-right">
+      <button id="midi-import-btn" class="btn ghost topbtn">🎵 导入 MIDI</button>
+      <button id="chord-lib" class="btn ghost topbtn">🎹 和弦库</button>
+      <button id="random-btn" class="btn ghost topbtn">🎲 随机生成</button>
+      <button id="about-btn" class="btn ghost topbtn">ℹ 关于</button>
+      <label class="theme-switch">🎨 <select id="theme"></select></label>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- 左侧输入面板 -->
+    <aside class="panel">
+      <div id="import-banner" class="import-banner hidden">
+        🎵 已导入 <b id="import-name">MIDI</b> · <span id="import-meta"></span>
+        <button class="x" id="import-clear" title="返回简谱编辑">×</button>
+      </div>
+
+      <details class="group" open>
+        <summary>全局设置</summary>
+        <div class="grid2">
+          <section class="field">
+            <label for="key">调号</label>
+            <select id="key"></select>
+          </section>
+          <section class="field">
+            <label for="meter">节拍</label>
+            <select id="meter">
+              <option value="4/4" selected>4/4</option>
+              <option value="3/4">3/4</option>
+              <option value="2/4">2/4</option>
+              <option value="6/8">6/8</option>
+            </select>
+          </section>
+          <section class="field">
+            <label for="bpm">速度 BPM (40~240)</label>
+            <input id="bpm" type="number" min="40" max="240" value="120" />
+          </section>
+          <section class="field">
+            <label for="position">把位偏好</label>
+            <select id="position">
+              <option value="low" selected>低把位 (0-4品)</option>
+              <option value="high">高把位 (5品+)</option>
+            </select>
+          </section>
+          <section class="field">
+            <label for="accomp">和弦伴奏</label>
+            <select id="accomp">
+              <option value="on" selected>开启（分解）</option>
+              <option value="off">关闭</option>
+            </select>
+          </section>
+          <section class="field">
+            <label for="multi-track">多音轨模式</label>
+            <select id="multi-track">
+              <option value="off" selected>关闭（单轨）</option>
+              <option value="on">开启（多轨）</option>
+            </select>
+          </section>
+          <section class="field">
+            <label for="line-beats">每行拍数（0=不换行）</label>
+            <input id="line-beats" type="number" min="0" max="128" value="16" />
+          </section>
+        </div>
+      </details>
+
+      <details class="group" open>
+        <summary>音轨 <span id="track-hint" class="hint"></span></summary>
+        <div id="tracks-list"></div>
+        <button id="add-track" class="btn ghost">＋ 添加音轨</button>
+      </details>
+
+      <button id="generate" class="btn primary">⟳ 生成四类谱面</button>
+
+      <div class="player">
+        <button id="play" class="btn">▶ 播放</button>
+        <button id="pausebtn" class="btn" disabled>⏸ 暂停</button>
+        <button id="stopbtn" class="btn" disabled>⏹ 停止</button>
+        <div class="vol">
+          <span>🔊</span>
+          <input id="volume" type="range" min="0" max="100" value="80" />
+        </div>
+      </div>
+
+      <div class="exports">
+        <div class="io-row">
+          <button id="save-file" class="btn">💾 保存</button>
+          <button id="load-file-btn" class="btn">📂 载入</button>
+          <input id="load-file" type="file" accept=".json" hidden>
+        </div>
+        <button id="export-zip" class="btn accent">📦 全部导出 ZIP（谱面+MIDI）</button>
+      </div>
+    </aside>
+
+    <!-- 隐藏的 MIDI 文件选择 -->
+    <input id="midi-file" type="file" accept=".mid,.midi,audio/mid" hidden>
+
+    <!-- 右侧四谱面 -->
+    <section class="sheets">
+      <div class="sheet" id="card-jianpu">
+        <div class="sheet-bar"><span>简谱</span>
+          <span class="dl"><button data-type="jianpu" data-fmt="png" class="mini">PNG</button>
+          <button data-type="jianpu" data-fmt="svg" class="mini">SVG</button></span></div>
+        <div class="sheet-body" id="svg-jianpu"><div class="placeholder">点击「生成」查看谱面</div></div>
+      </div>
+      <div class="sheet" id="card-staff">
+        <div class="sheet-bar"><span>五线谱</span>
+          <span class="dl"><button data-type="staff" data-fmt="png" class="mini">PNG</button>
+          <button data-type="staff" data-fmt="svg" class="mini">SVG</button></span></div>
+        <div class="sheet-body" id="svg-staff"><div class="placeholder">点击「生成」查看谱面</div></div>
+      </div>
+      <div class="sheet" id="card-tab">
+        <div class="sheet-bar"><span>六线单音谱（TAB）</span>
+          <span class="dl"><button data-type="tab" data-fmt="png" class="mini">PNG</button>
+          <button data-type="tab" data-fmt="svg" class="mini">SVG</button></span></div>
+        <div class="sheet-body" id="svg-tab"><div class="placeholder">点击「生成」查看谱面</div></div>
+      </div>
+      <div class="sheet" id="card-chordtab">
+        <div class="sheet-bar"><span>六线和弦谱</span>
+          <span class="dl"><button data-type="chordtab" data-fmt="png" class="mini">PNG</button>
+          <button data-type="chordtab" data-fmt="svg" class="mini">SVG</button></span></div>
+        <div class="sheet-body" id="svg-chordtab"><div class="placeholder">点击「生成」查看谱面</div></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-box">
+      <h3 id="modal-title">输入有误</h3>
+      <div id="modal-body"></div>
+      <button id="modal-close" class="btn primary">知道了</button>
+    </div>
+  </div>
+
+  <div id="midi-modal" class="modal hidden">
+    <div class="modal-box midi-box">
+      <h3>🎵 导入 MIDI 文件</h3>
+      <div id="midi-info" class="midi-info">解析中…</div>
+      <section class="field">
+        <label for="midi-key">目标调（将 MIDI 音高映射到简谱/五线谱/六线谱）</label>
+        <select id="midi-key"></select>
+      </section>
+      <div id="midi-tracks" class="midi-tracks"></div>
+      <div class="rand-actions">
+        <button id="midi-cancel" class="btn">取消</button>
+        <button id="midi-do-import" class="btn primary">导入并生成谱面</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="chord-modal" class="modal hidden">
+    <div class="modal-box chord-box">
+      <h3>🎹 和弦测试台</h3>
+      <div class="chord-row">
+        <input id="chord-name" type="text" value="C" placeholder="输入和弦名，如 C / G7 / Am / F#m">
+        <button id="chord-play" class="btn primary">▶ 试听</button>
+      </div>
+      <div class="chord-quick" id="chord-quick"></div>
+      <div id="chord-view" class="chord-view"></div>
+      <button id="chord-close" class="btn">关闭</button>
+    </div>
+  </div>
+
+  <div id="random-modal" class="modal hidden">
+    <div class="modal-box rand-box">
+      <h3>🎲 随机曲谱生成器</h3>
+      <div class="rand-grid">
+        <label>拍数 <input id="r-count" type="number" min="4" max="64" value="16"></label>
+        <label>调号 <select id="r-key"></select></label>
+        <label>节拍 <select id="r-meter"><option>4/4</option><option>3/4</option><option>2/4</option><option>6/8</option></select></label>
+        <label>BPM <input id="r-bpm" type="number" min="40" max="240" value="120"></label>
+      </div>
+      <div class="rand-opts">
+        <label><input type="checkbox" id="r-chord" checked> 含和弦</label>
+        <label><input type="checkbox" id="r-rest" checked> 含休止</label>
+        <label><input type="checkbox" id="r-tie" checked> 含延音</label>
+        <label><input type="checkbox" id="r-oct"> 含八度变化</label>
+        <label><input type="checkbox" id="r-half"> 含半音</label>
+        <label><input type="checkbox" id="r-multi"> 含同拍多音</label>
+      </div>
+      <div class="rand-actions">
+        <button id="r-generate" class="btn primary">生成并填入音轨1</button>
+        <button id="r-close" class="btn">关闭</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="about-modal" class="modal hidden">
+    <div class="modal-box about-box">
+      <h3>ℹ 关于 ChordBridge</h3>
+      <div id="about-content" class="about-content">加载中…</div>
+      <button id="about-close" class="btn primary">关闭</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

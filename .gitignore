@@ -1,17 +1,29 @@
-# Rust
-/target/
+# ========== Rust / Cargo 编译产物 ==========
+# 关键点：写 "target/"（不带前导 /）才能匹配任意层级的 target 目录，
+# 比如本项目里的 src-tauri/target。带前导 / 的 /target/ 只匹配仓库根目录。
+target/
 **/*.rs.bk
 *.pdb
 
-# Tauri (前端)
-/node_modules/
+# ========== 前端 / Node（Tauri webview） ==========
+node_modules/
 /dist/
+/dist-ssr/
 /.vite/
 
-# 系统文件
+# ========== 打包分发产物（体积巨大，不进仓库） ==========
+releases/**/*.dmg
+releases/**/*.zip
+releases/**/*.app
+releases/**/*.exe
+
+# ========== 系统 / 编辑器垃圾文件 ==========
 .DS_Store
 Thumbs.db
-
-# IDE配置（看个人习惯，想传就传）
 .vscode/
 .idea/
+
+# ========== 本地工具数据（可选） ==========
+# .workbuddy/ 是项目记忆/工具本地数据，含个人上下文，一般建议忽略。
+# 若你想把协作记忆提交到仓库，就把下面这行删掉。
+.workbuddy/

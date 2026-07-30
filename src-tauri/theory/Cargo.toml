@@ -1,0 +1,8 @@
+[package]
+name = "chordbridge-theory"
+version = "0.1.0"
+edition = "2021"
+description = "ChordBridge 乐理核心：音高映射、调号计算（五度循环）、指板查找"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
