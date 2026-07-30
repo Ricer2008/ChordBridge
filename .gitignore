@@ -1,0 +1,17 @@
+# Rust
+/target/
+**/*.rs.bk
+*.pdb
+
+# Tauri (前端)
+/node_modules/
+/dist/
+/.vite/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE配置（看个人习惯，想传就传）
+.vscode/
+.idea/
