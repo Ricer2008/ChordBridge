@@ -23,10 +23,6 @@
 
 前往 [Releases](https://github.com/Ricer2008/ChordBridge/releases) 下载对应平台的安装包。
 
-- macOS: ChordBridge_0.1.0-beta_aarch64\ChordBridge_0.1.0-beta_x64
-- Windows: 待补充
-- Linux: 待补充
-
 ## 技术栈
 
 - Rust
