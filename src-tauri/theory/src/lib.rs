@@ -40,11 +40,14 @@ pub struct JianpuNote {
 }
 
 /// 一拍：可含多个同拍音（+ 连接）、休止（0）或延音（-）
+/// dots = 附点数（3. → 1，时长 ×1.5；3.. → 2，时长 ×1.75）
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Beat {
     pub notes: Vec<JianpuNote>,
     pub is_rest: bool,
     pub is_tie: bool,
+    #[serde(default)]
+    pub dots: u8,
 }
 
 #[derive(Debug, PartialEq)]
@@ -78,7 +81,7 @@ pub fn parse_jianpu(text: &str) -> (Vec<Beat>, Vec<(usize, ParseError)>) {
         };
         for part in &parts {
             if part == "-" {
-                beats.push(Beat { notes: Vec::new(), is_rest: false, is_tie: true });
+                beats.push(Beat { notes: Vec::new(), is_rest: false, is_tie: true, dots: 0 });
                 continue;
             }
             match parse_beat(part) {
@@ -104,7 +107,10 @@ fn is_half_acc(c: char) -> bool {
 }
 
 fn parse_beat(tok: &str) -> Result<Beat, ParseError> {
-    let subs: Vec<&str> = tok.split('+').filter(|s| !s.is_empty()).collect();
+    // 剥离尾部附点（记在拍上，作用于整拍时值）
+    let body = tok.trim_end_matches('.');
+    let dots = tok.chars().count() as u8 - body.chars().count() as u8;
+    let subs: Vec<&str> = body.split('+').filter(|s| !s.is_empty()).collect();
     if subs.is_empty() {
         return Err(ParseError::BadToken(tok.into()));
     }
@@ -118,11 +124,11 @@ fn parse_beat(tok: &str) -> Result<Beat, ParseError> {
                     return Err(ParseError::BadToken(
                         format!("休止符 0 不能与 + 连用：{}", sub)));
                 }
-                return Ok(Beat { notes: Vec::new(), is_rest: true, is_tie: false });
+                return Ok(Beat { notes: Vec::new(), is_rest: true, is_tie: false, dots });
             }
         }
     }
-    Ok(Beat { notes, is_rest: false, is_tie: false })
+    Ok(Beat { notes, is_rest: false, is_tie: false, dots })
 }
 
 /// 解析单个音/休止子串。返回 Ok(Some)=音，Ok(None)=休止，Err=错误
@@ -182,6 +188,66 @@ pub fn note_to_midi(note: &JianpuNote, key: &Key, global_octave: i32) -> i32 {
     let go = global_octave.clamp(-1, 3); // 越界优雅降级
     let tonic = 60 + ((key.pc + 6) % 12) - 6;
     tonic + DEGREE_SEMIS[(note.degree - 1) as usize] + note.acc + 12 * (go + note.oct_shift)
+}
+
+/// 拍的实际时长（以一拍为单位）：附点 ×1.5 / ×1.75
+pub fn beat_duration(beat: &Beat) -> f64 {
+    let mut d = 1.0;
+    for i in 0..beat.dots {
+        d += 0.5f64.powi(i as i32 + 1);
+    }
+    d
+}
+
+// ---------------- 五线谱拼写（调号感知）----------------
+
+pub const LETTERS: [&str; 7] = ["C", "D", "E", "F", "G", "A", "B"];
+const LETTER_PC: [i32; 7] = [0, 2, 4, 5, 7, 9, 11];
+const SHARP_ORDER: [usize; 7] = [3, 0, 4, 1, 5, 2, 6]; // F C G D A E B（字母索引）
+const FLAT_ORDER: [usize; 7] = [6, 2, 5, 1, 4, 0, 3];  // B E A D G C F
+
+/// 调号：每个字母（索引 0..7）的默认升降（如 G 大调 F 为 +1）
+pub fn key_signature(key: &Key) -> [i32; 7] {
+    let mut sig = [0i32; 7];
+    if key.acc > 0 {
+        for &li in SHARP_ORDER.iter().take(key.acc as usize) { sig[li] = 1; }
+    } else if key.acc < 0 {
+        for &li in FLAT_ORDER.iter().take((-key.acc) as usize) { sig[li] = -1; }
+    }
+    sig
+}
+
+/// 拼写结果：letter/spell_acc/octave_sci + show_acc（相对调号还需画的变音记号）
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
+pub struct SpelledNote {
+    pub midi: i32,
+    pub letter: usize,  // 0..=6 → C..B
+    pub spell_acc: i32, // 拼写升降（含调号）
+    pub octave_sci: i32,
+    pub show_acc: i32,  // 相对调号的差值：0 = 调号已覆盖，无需画
+}
+
+/// 大调主音字母（升号调用 sharp 拼写，降号调用 flat 拼写）
+fn major_tonic_letter(key: &Key) -> usize {
+    // pc → 字母（双拼名按 acc 方向取舍）
+    let sharp = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    let flat = ["C", "Db", "D", "Eb", "E", "F", "Gb", "G", "Ab", "A", "Bb", "B"];
+    let name = if key.acc >= 0 { sharp[key.pc as usize % 12] } else { flat[key.pc as usize % 12] };
+    LETTERS.iter().position(|&l| name.starts_with(l)).unwrap_or(0)
+}
+
+/// 简谱音符 → MIDI + 五线谱拼写（与前端 theory.js noteToPitch 同构）
+pub fn note_to_pitch(note: &JianpuNote, key: &Key, global_octave: i32) -> SpelledNote {
+    let midi = note_to_midi(note, key, global_octave);
+    let ti = major_tonic_letter(key);
+    let li = (ti + note.degree as usize - 1) % 7;
+    let letter = li;
+    let mut spell_acc = ((midi % 12) - LETTER_PC[letter] + 12) % 12;
+    if spell_acc > 6 { spell_acc -= 12; }
+    let octave_sci = (midi - spell_acc).div_euclid(12) - 1;
+    let sig = key_signature(key);
+    let show_acc = spell_acc - sig[letter];
+    SpelledNote { midi, letter, spell_acc, octave_sci, show_acc }
 }
 
 /// 标准调弦（第1弦到第6弦）：e4 B3 G3 D3 A2 E2
@@ -374,5 +440,55 @@ mod tests {
         let f = find_fret(28, "low").unwrap(); // E1
         assert_eq!(f.transposed, 1);
         assert_eq!((f.string, f.fret), (6, 0));
+    }
+
+    #[test]
+    fn test_parse_dotted() {
+        // 3. 附点；0. 附点休止；3.. 复附点；3+4. 一拍两音带附点
+        let (beats, errs) = parse_jianpu("3. 0. 3.. 3+4.");
+        assert!(errs.is_empty(), "{:?}", errs);
+        assert_eq!(beats[0].dots, 1);
+        assert!(beats[1].is_rest);
+        assert_eq!(beats[1].dots, 1);
+        assert_eq!(beats[2].dots, 2);
+        assert_eq!(beats[3].dots, 1);
+        assert_eq!(beats[3].notes.len(), 2);
+    }
+
+    #[test]
+    fn test_beat_duration() {
+        let mk = |dots: u8| Beat { notes: vec![], is_rest: false, is_tie: false, dots };
+        assert!((beat_duration(&mk(0)) - 1.0).abs() < 1e-9);
+        assert!((beat_duration(&mk(1)) - 1.5).abs() < 1e-9);
+        assert!((beat_duration(&mk(2)) - 1.75).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_key_signature() {
+        let g = resolve_key("G").unwrap();
+        let sig = key_signature(&g);
+        assert_eq!(sig[3], 1); // F#
+        let f = resolve_key("F").unwrap();
+        let sig = key_signature(&f);
+        assert_eq!(sig[6], -1); // Bb
+    }
+
+    #[test]
+    fn test_spelling_show_acc() {
+        // G 大调：7（F#）在调号内，不画记号；还原的 F（b7）要画还原号（show_acc=-1-1=-2 → ♮♮ 不合常理，按差值处理）
+        let g = resolve_key("G").unwrap();
+        let n7 = JianpuNote { degree: 7, acc: 0, oct_shift: 0 };
+        let p = note_to_pitch(&n7, &g, 0);
+        assert_eq!(p.show_acc, 0, "F# 在 G 大调调号内");
+        let nb7 = JianpuNote { degree: 7, acc: -1, oct_shift: 0 }; // b7 = F 还原
+        let p2 = note_to_pitch(&nb7, &g, 0);
+        assert_eq!(p2.spell_acc, 0);
+        assert_eq!(p2.show_acc, -1, "还原 F 需画降号中和调号的 #");
+        // C 大调：#4 = F#，调号无覆盖，需要画
+        let c = resolve_key("C").unwrap();
+        let n4 = JianpuNote { degree: 4, acc: 1, oct_shift: 0 };
+        let p3 = note_to_pitch(&n4, &c, 0);
+        assert_eq!(p3.spell_acc, 1);
+        assert_eq!(p3.show_acc, 1);
     }
 }

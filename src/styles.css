@@ -1,7 +1,7 @@
 /* ============================================================
    ChordBridge 样式 — 多设计语言主题
-   六套主题：拉丝金属(默认·早期OS X) · 亚麻纸(OS X)
-            · Win经典(Windows 98) · Win10 · KDE(Breeze) · HarmonyOS
+   五套主题：拉丝金属(默认·早期OS X) · 亚麻纸(OS X)
+            · Win经典(Windows 98) · Win10 · KDE(Breeze)
    说明：SVG 谱面颜色取自 --fg/--card/--accent/--dim/--hl 等变量，
    这些变量在所有主题下保持稳定（谱面始终像印在纸上），
    变的是窗体的"机身高光"与各系统的组件设计语言。
@@ -11,22 +11,23 @@
 :root,
 html[data-theme="brushed"] {
   /* 机身高光（拉丝银） */
-  --bg: #b9bec5;
-  --panel: #c4c9cf;
-  --ui-fg: #2b2620;
-  --dim: #6f695e;
-  --line: #8c95a0;
-  --line-soft: #aab0b8;
-  --shadow: 0 8px 26px rgba(20,24,30,.36);
-  --metal-top: #e2e6ea;
-  --metal-bot: #a6acb4;
+  --bg: #b7bcc4;
+  --panel: #c6cbd1;
+  --ui-fg: #292929;
+  --dim: #626057;
+  --line: #838c97;
+  --line-soft: #a9afb7;
+  --shadow: 0 10px 30px rgba(18,22,28,.4), 0 2px 6px rgba(18,22,28,.2);
+  --metal-top: #e6eaee;
+  --metal-bot: #a2a8b1;
   --tex-bar: repeating-linear-gradient(0deg, rgba(0,0,0,.05) 0 1px, transparent 1px 3px);
   --tex-body:
     repeating-linear-gradient(90deg, rgba(255,255,255,.07) 0 1px, rgba(0,0,0,.035) 1px 2px),
-    linear-gradient(180deg, #cdd2d8 0%, #b6bcc3 55%, #a8aeb6 100%);
+    radial-gradient(ellipse at 50% -10%, rgba(255,255,255,.35), transparent 60%),
+    linear-gradient(180deg, #d0d5da 0%, #b7bdc4 55%, #a5abb4 100%);
   --tex-panel:
     repeating-linear-gradient(90deg, rgba(255,255,255,.06) 0 1px, rgba(0,0,0,.04) 1px 2px),
-    linear-gradient(180deg, #d4d9de, #bdc3ca 60%, #aeb4bc);
+    linear-gradient(180deg, #d7dcE1, #bfc5cc 60%, #b0b6be);
 }
 
 /* Win 经典 —— Windows 98：银灰机身 + 蓝绿桌面 + 3D 立体边框 */
@@ -71,45 +72,25 @@ html[data-theme="kde"] {
   --tex-panel: none;
 }
 
-/* ThinkPad · IBM 彩蛋 —— 黑红白：哑光炭黑机身 + 经典 TrackPoint 红 + 白字 */
-html[data-theme="thinkpad"] {
-  --bg: #16181a;
-  --panel: #202325;
-  --ui-fg: #f2f3f4;
-  --dim: #9aa0a3;
-  --line: #000000;
-  --line-soft: #34383b;
-  --shadow: 0 10px 28px rgba(0,0,0,.6);
-  --metal-top: #303538;
-  --metal-bot: #17191b;
-  /* 哑光橡胶漆的极细颗粒纹理 */
-  --tex-bar: repeating-linear-gradient(0deg, rgba(255,255,255,.02) 0 1px, transparent 1px 3px);
-  --tex-body:
-    radial-gradient(circle at 50% 0%, rgba(255,255,255,.03), transparent 55%),
-    linear-gradient(180deg, #1b1d1f 0%, #141618 100%);
-  --tex-panel:
-    repeating-linear-gradient(90deg, rgba(255,255,255,.015) 0 1px, rgba(0,0,0,.10) 1px 2px),
-    linear-gradient(180deg, #242729, #1c1f21);
-}
-
 html[data-theme="linen"] {
-  --bg: #ddd5c2;
-  --panel: #e7e0cf;
-  --ui-fg: #3a332a;
-  --dim: #8a8170;
-  --line: #b7ad95;
-  --line-soft: #cbc2ab;
-  --shadow: 0 8px 24px rgba(80,70,45,.28);
-  --metal-top: #f3eedf;
-  --metal-bot: #cabf9f;
+  --bg: #dcd3bd;
+  --panel: #e9e2d1;
+  --ui-fg: #38301f;
+  --dim: #877c65;
+  --line: #b3a78c;
+  --line-soft: #c9bfa7;
+  --shadow: 0 10px 28px rgba(78,66,40,.32), 0 2px 5px rgba(78,66,40,.15);
+  --metal-top: #f5f0e2;
+  --metal-bot: #c8bd9b;
   --tex-bar: repeating-linear-gradient(0deg, rgba(0,0,0,.04) 0 1px, transparent 1px 3px);
   --tex-body:
     repeating-linear-gradient(0deg, rgba(0,0,0,.025) 0 1px, transparent 1px 3px),
     repeating-linear-gradient(90deg, rgba(0,0,0,.02) 0 1px, transparent 1px 3px),
-    linear-gradient(180deg, #efe9db, #ddd5c2);
+    radial-gradient(ellipse at 50% 0%, rgba(255,255,255,.5), transparent 55%),
+    linear-gradient(180deg, #f2ecdd, #dcd3bd);
   --tex-panel:
     repeating-linear-gradient(0deg, rgba(0,0,0,.02) 0 1px, transparent 1px 3px),
-    linear-gradient(180deg, #f1ecdf, #e2dac6 60%, #d6cdb6);
+    linear-gradient(180deg, #f3eee1, #e3dbc6 60%, #d5ccb3);
 }
 
 /* SVG 谱面颜色（所有材质统一：谱面像印在纸上） */
@@ -139,22 +120,22 @@ body {
 
 /* ---------- 标题栏（Aqua 窗口条 + 交通灯 + pinstripe） ---------- */
 .topbar {
-  display: flex; align-items: center; gap: 14px;
-  padding: 11px 18px; position: sticky; top: 0; z-index: 20;
+  display: flex; align-items: center; gap: 16px;
+  padding: 12px 20px; position: sticky; top: 0; z-index: 20;
   border-bottom: 1px solid var(--line);
   background-color: var(--panel);
   background-image: var(--tex-bar), var(--tex-panel);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.55), 0 2px 6px rgba(0,0,0,.3);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.6), inset 0 -1px 0 rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.28);
 }
 .logo {
   font-size: 19px; font-weight: 800; color: var(--ui-fg);
-  letter-spacing: .3px; text-shadow: 0 1px 0 rgba(255,255,255,.4);
-  display: flex; align-items: center; gap: 6px;
+  letter-spacing: .5px; text-shadow: 0 1px 0 rgba(255,255,255,.4);
+  display: flex; align-items: center; gap: 8px;
 }
 .logo .mark {
-  display: inline-grid; place-items: center; width: 26px; height: 26px;
-  border-radius: 7px; background: linear-gradient(180deg, #6fb3f0, #2f7fd4);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.6), 0 1px 2px rgba(0,0,0,.4);
+  display: inline-grid; place-items: center; width: 27px; height: 27px;
+  border-radius: 8px; background: linear-gradient(180deg, #7dbdf4, #2f7fd4);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.7), inset 0 -2px 3px rgba(0,0,0,.25), 0 1px 3px rgba(0,0,0,.45);
   color: #fff; font-size: 14px;
 }
 .subtitle { font-size: 11.5px; color: var(--dim); text-shadow: 0 1px 0 rgba(255,255,255,.3); }
@@ -266,21 +247,25 @@ textarea:focus, input:focus, select:focus {
 .exports { display: flex; flex-direction: column; gap: 8px; }
 
 /* ---------- 谱面区（像放在桌上的谱纸） ---------- */
-.sheets { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.sheets { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .sheet {
   background: var(--card);
-  border: 1px solid #b9ad8e; border-radius: 10px; overflow: hidden;
-  box-shadow: 0 3px 10px rgba(0,0,0,.3), inset 0 1px 0 #fff;
-  transition: border-color .2s, box-shadow .2s;
+  border: 1px solid #b5a887; border-radius: 10px; overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0,0,0,.28), 0 1px 3px rgba(0,0,0,.18), inset 0 1px 0 #fff;
+  transition: border-color .2s, box-shadow .2s, transform .2s;
 }
-.sheet:hover { border-color: #8a7ed0; box-shadow: 0 4px 14px rgba(0,0,0,.36), inset 0 1px 0 #fff; }
+.sheet:hover {
+  border-color: #9b8352;
+  box-shadow: 0 6px 20px rgba(0,0,0,.34), 0 2px 5px rgba(0,0,0,.2), inset 0 1px 0 #fff;
+  transform: translateY(-1px);
+}
 .sheet-bar {
   display: flex; justify-content: space-between; align-items: center;
-  padding: 8px 16px; border-bottom: 1px solid #cbb98f;
-  font-size: 13px; font-weight: 700;
+  padding: 9px 16px; border-bottom: 1px solid #ccb98d;
+  font-size: 13px; font-weight: 700; letter-spacing: .3px;
   color: var(--accent);
-  background: linear-gradient(180deg, #efe7d2, #e2d8bd);
-  text-shadow: 0 1px 0 rgba(255,255,255,.5);
+  background: linear-gradient(180deg, #f2ead6, #e3d9bd);
+  text-shadow: 0 1px 0 rgba(255,255,255,.6);
 }
 .mini {
   background: linear-gradient(180deg, #f6f8fa, #dde2e8);
@@ -380,6 +365,22 @@ textarea:focus, input:focus, select:focus {
   box-shadow: inset 0 1px 3px rgba(0,0,0,.18);
 }
 
+/* ---------- 曲谱库 / 局域网 ---------- */
+.lib-box { max-width: 520px; }
+.lib-list { display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow-y: auto;
+  padding: 6px; border: 1px solid var(--line); border-radius: 8px;
+  background: rgba(255,255,255,.12); margin-top: 8px; }
+.lib-item { display: flex; align-items: center; gap: 8px; font-size: 13px;
+  padding: 7px 10px; border-radius: 6px; background: rgba(255,255,255,.1);
+  border: 1px solid transparent; }
+.lib-item:hover { border-color: var(--line); }
+.lib-name { flex: 1; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lib-time { flex-shrink: 0; }
+.lan-status { font-size: 14px; line-height: 1.8; padding: 10px 12px; border-radius: 8px;
+  border: 1px solid var(--line); background: rgba(255,255,255,.12); margin: 8px 0;
+  word-break: break-all; }
+.lan-status b { color: var(--ui-fg); font-family: ui-monospace, Menlo, monospace; }
+
 /* ---------- MIDI 导入弹窗 ---------- */
 .midi-box { max-width: 500px; }
 .midi-info {
@@ -473,6 +474,22 @@ html[data-theme="win98"] .mini:active {
 }
 html[data-theme="win98"] .sheet { border-radius: 0; border-color: #808080; }
 html[data-theme="win98"] .sheet-bar { border-radius: 0; background: linear-gradient(90deg,#000080,#1084d0); color:#fff; text-shadow:none; }
+/* 新组件：曲谱库 / 局域网 / 导入横幅 */
+html[data-theme="win98"] .lib-list,
+html[data-theme="win98"] .midi-tracks {
+  background: #fff; border: 2px solid; border-color: #808080 #dfdfdf #dfdfdf #808080; border-radius: 0;
+}
+html[data-theme="win98"] .lib-item { background: #c0c0c0; }
+html[data-theme="win98"] .lib-item:hover { background: #d4d0c8; }
+html[data-theme="win98"] .lan-status {
+  background: #fff; border: 2px solid; border-color: #808080 #dfdfdf #dfdfdf #808080; border-radius: 0;
+}
+html[data-theme="win98"] .import-banner {
+  background: #c0c0c0; border: 2px solid; border-color: #fff #808080 #808080 #fff;
+  border-radius: 0; box-shadow: none;
+}
+html[data-theme="win98"] .import-banner b { color: #000080; }
+html[data-theme="win98"] .error { border-radius: 0; }
 
 /* ---------- Windows 10：Fluent 平面 + 直角/微圆 ---------- */
 html[data-theme="win10"] body { font-family: "Segoe UI", "Microsoft YaHei", sans-serif; }
@@ -511,7 +528,19 @@ html[data-theme="win10"] .btn.primary:hover:not(:disabled) { background: #106ebe
 html[data-theme="win10"] .btn.ghost { border-style: solid; background: transparent; color: #444; }
 html[data-theme="win10"] .btn:active:not(:disabled) { transform: none; box-shadow: none; }
 html[data-theme="win10"] .sheet { border-radius: 3px; border-color: #d8d8d8; box-shadow: var(--shadow); }
-html[data-theme="win10"] .sheet-bar { background: #f3f3f3; color: #0078d4; text-shadow: none; }
+html[data-theme="win10"] .sheet-bar { background: #f3f3f3; color: #0078d4; text-shadow: none; border-bottom-color: #e2e2e2; }
+html[data-theme="win10"] .sheet:hover { border-color: #0078d4; }
+/* 新组件：曲谱库 / 局域网 / 导入横幅 */
+html[data-theme="win10"] .lib-list,
+html[data-theme="win10"] .midi-tracks { background: #fff; border-color: #e2e2e2; border-radius: 2px; }
+html[data-theme="win10"] .lib-item { background: #f7f7f7; border-color: transparent; }
+html[data-theme="win10"] .lib-item:hover { background: #eef4fa; border-color: #cfe4f5; }
+html[data-theme="win10"] .lan-status { background: #f7f7f7; border-color: #e2e2e2; border-radius: 2px; }
+html[data-theme="win10"] .import-banner {
+  background: rgba(0,120,212,.08); border-color: #0078d4; border-radius: 2px; box-shadow: none;
+}
+html[data-theme="win10"] .import-banner b { color: #005a9e; }
+html[data-theme="win10"] .error { border-radius: 2px; background: rgba(232,17,35,.06); }
 
 /* ---------- KDE Breeze：冷灰蓝平面 + 小圆角 ---------- */
 html[data-theme="kde"] body { font-family: "Noto Sans", "Oxygen", "Microsoft YaHei", sans-serif; }
@@ -546,92 +575,15 @@ html[data-theme="kde"] .btn.ghost { border-style: solid; background: transparent
 html[data-theme="kde"] .btn:active:not(:disabled) { transform: none; box-shadow: inset 0 1px 3px rgba(0,0,0,.12); }
 html[data-theme="kde"] .sheet { border-radius: 6px; border-color: #bcc2c7; box-shadow: var(--shadow); }
 html[data-theme="kde"] .sheet-bar { background: #eff0f1; color: #2980b9; text-shadow: none; }
-
-/* ---------- ThinkPad · IBM 彩蛋：黑红白 + 哑光机身 + TrackPoint 红 ---------- */
-html[data-theme="thinkpad"] body { font-family: "IBM Plex Mono", "Consolas", "SF Mono", "Menlo", "Microsoft YaHei", monospace; letter-spacing: .2px; }
-
-/* 顶栏：炭黑机身 + 底部一道 TrackPoint 红线（模拟小红点键帽的红） */
-html[data-theme="thinkpad"] .topbar {
-  background: #1b1d1f;
-  background-image: repeating-linear-gradient(0deg, rgba(255,255,255,.02) 0 1px, transparent 1px 3px);
-  border-bottom: 2px solid #e60012;
-  box-shadow: 0 2px 6px rgba(0,0,0,.5);
+html[data-theme="kde"] .sheet:hover { border-color: #3daee9; }
+/* 新组件：曲谱库 / 局域网 / 导入横幅 */
+html[data-theme="kde"] .lib-list,
+html[data-theme="kde"] .midi-tracks { background: #fcfcfc; border-color: #d3d7da; border-radius: 4px; }
+html[data-theme="kde"] .lib-item { background: #f6f7f8; }
+html[data-theme="kde"] .lib-item:hover { background: #eaf6fc; border-color: #b9dff2; }
+html[data-theme="kde"] .lan-status { background: #f6f7f8; border-color: #d3d7da; border-radius: 4px; }
+html[data-theme="kde"] .import-banner {
+  background: rgba(61,174,233,.1); border-color: #3daee9; border-radius: 4px; box-shadow: none;
 }
-html[data-theme="thinkpad"] .logo { color: #ffffff; text-shadow: none; font-weight: 700; }
-html[data-theme="thinkpad"] .logo .mark {
-  border-radius: 3px; background: #e60012;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 1px 2px rgba(0,0,0,.6);
-  color: #fff;
-}
-html[data-theme="thinkpad"] .subtitle { color: #9aa0a3; text-shadow: none; }
-/* 右上角 ThinkPad 式小红点点缀 */
-html[data-theme="thinkpad"] .theme-switch::before {
-  content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-  background: #e60012; box-shadow: 0 0 4px rgba(230,0,18,.7); margin-right: 2px;
-}
-
-/* 面板 / 弹窗：哑光黑方盒，直角硬朗，仅极小圆角 */
-html[data-theme="thinkpad"] .panel,
-html[data-theme="thinkpad"] .modal-box {
-  border-radius: 4px; background: #202325;
-  border: 1px solid #000; box-shadow: 0 8px 24px rgba(0,0,0,.55);
-}
-html[data-theme="thinkpad"] .group,
-html[data-theme="thinkpad"] .track,
-html[data-theme="thinkpad"] .midi-info,
-html[data-theme="thinkpad"] .midi-tracks {
-  border-radius: 3px; background: #1a1c1e;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
-  border: 1px solid #000;
-}
-html[data-theme="thinkpad"] .group > summary { color: #e60012; text-shadow: none; font-weight: 700; letter-spacing: .5px; }
-
-/* 输入控件：深凹槽 + 白字，聚焦亮红边 */
-html[data-theme="thinkpad"] textarea,
-html[data-theme="thinkpad"] input,
-html[data-theme="thinkpad"] select,
-html[data-theme="thinkpad"] .about-content {
-  border-radius: 3px; background: #121415; color: #f2f3f4;
-  box-shadow: inset 0 1px 3px rgba(0,0,0,.6);
-  border: 1px solid #000;
-}
-html[data-theme="thinkpad"] textarea:focus,
-html[data-theme="thinkpad"] input:focus,
-html[data-theme="thinkpad"] select:focus {
-  border-color: #e60012; box-shadow: 0 0 0 2px rgba(230,0,18,.35); background: #16181a;
-}
-
-/* 按钮：黑键帽质感（哑光黑 + 白字），直角小圆角 */
-html[data-theme="thinkpad"] .btn,
-html[data-theme="thinkpad"] .mini,
-html[data-theme="thinkpad"] .chord-quick button {
-  border-radius: 4px; text-shadow: none;
-  background: linear-gradient(180deg, #2c2f31, #202325);
-  border: 1px solid #000; color: #f2f3f4;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 1px 2px rgba(0,0,0,.5);
-  transition: transform .1s, background .15s, box-shadow .15s;
-}
-html[data-theme="thinkpad"] .btn:hover:not(:disabled),
-html[data-theme="thinkpad"] .mini:hover:not(:disabled) { filter: none; background: linear-gradient(180deg, #34383b, #26292b); }
-/* 主/强调按钮：TrackPoint 红键帽 */
-html[data-theme="thinkpad"] .btn.primary,
-html[data-theme="thinkpad"] .btn.accent {
-  background: linear-gradient(180deg, #ff1a2e, #cc0010);
-  color: #fff; border-color: #7a000a;
-  text-shadow: 0 1px 1px rgba(0,0,0,.4);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.25), 0 2px 6px rgba(230,0,18,.4);
-}
-html[data-theme="thinkpad"] .btn.primary:hover:not(:disabled),
-html[data-theme="thinkpad"] .btn.accent:hover:not(:disabled) { filter: brightness(1.08); }
-html[data-theme="thinkpad"] .btn.ghost {
-  border: 1px solid #3a3e41; background: transparent; color: #c7cbce;
-}
-html[data-theme="thinkpad"] .btn:active:not(:disabled) { transform: translateY(1px); box-shadow: inset 0 2px 4px rgba(0,0,0,.6); }
-
-/* 谱纸：这里保持白纸黑字（IBM 打印纸的感觉），仅描一道红边点题 */
-html[data-theme="thinkpad"] .sheet {
-  border-radius: 3px; background: #f7f7f5;
-  border: 1px solid #000; border-top: 2px solid #e60012;
-  box-shadow: 0 8px 24px rgba(0,0,0,.5);
-}
-html[data-theme="thinkpad"] .sheet-bar { background: #1b1d1f; color: #ffffff; text-shadow: none; border-bottom: 1px solid #e60012; }
+html[data-theme="kde"] .import-banner b { color: #2980b9; }
+html[data-theme="kde"] .error { border-radius: 4px; background: rgba(218,68,83,.08); border-color: rgba(218,68,83,.45); }

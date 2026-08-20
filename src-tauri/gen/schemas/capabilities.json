@@ -1,1 +1,1 @@
-{}
+{"default":{"identifier":"default","description":"ChordBridge 主窗口默认权限：事件监听（关闭确认）等核心能力","local":true,"windows":["main"],"permissions":["core:default"]}}

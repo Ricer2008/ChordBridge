@@ -2,7 +2,7 @@
 // MIDI 模块：Web Audio 合成预览（拨弦音色）+ 标准 MIDI 文件导出
 // 支持：beats 模型（休止/同拍多音均分时值）、多音轨同时播放、播放高亮回调
 // ============================================================
-import { noteToPitch } from "./theory.js";
+import { noteToPitch, beatDuration } from "./theory.js";
 import { chordMidiNotes } from "./chords.js";
 
 let ctx = null, master = null;
@@ -45,24 +45,37 @@ function pluck(midi, t, dur, vel = 0.9) {
 }
 
 // score → 事件列表 [{midi, start(beat), dur(beat), vel, track, beat}]
-// 同拍多音均分该拍时值；休止不发声；多音轨合并
+// 累计时间轴：附点拍时长 ×1.5/×1.75，延音拍与同拍多音正确衔接
 export function buildEvents(score, withAccomp) {
   const { tracks, key, meter } = score;
   const ev = [];
   tracks.forEach((tr, tk) => {
     if (!tr.enabled) return;
     let lastEvs = [];
-    tr.beats.forEach((beat, bi) => {
-      if (beat.isTie) { lastEvs.forEach((e) => (e.dur += 1)); return; }
-      if (beat.isRest) { lastEvs = []; return; }
+    let cursor = 0;                    // 当前拍起点（含附点后的偏移）
+    let lastDur = 1;                   // 上一发声拍的时长（供延音按比例分摊）
+    tr.beats.forEach((beat) => {
+      if (beat.isTie) {
+        // 延音拍：将这一拍的时长均分给上一拍的所有音符
+        // 单音(3-)→各延长1拍；多音(3+4-)→各延长1/n拍
+        const n = lastEvs.length || 1;
+        lastEvs.forEach((e) => (e.dur += lastDur / n));
+        cursor += lastDur;
+        return;
+      }
+      const beatDur = beatDuration(beat); // 附点：1.5 / 1.75
+      if (beat.isRest) { lastEvs = []; cursor += beatDur; lastDur = beatDur; return; }
       lastEvs = [];
       const n = beat.notes.length || 1;
       beat.notes.forEach((note, ni) => {
         const p = noteToPitch(note, key, tr.octave);
-        const e = { midi: p.midi, start: bi + ni / n, dur: 1 / n, vel: 0.9, track: tk, beat: bi };
+        const e = { midi: p.midi, start: cursor + (ni / n) * beatDur, dur: beatDur / n,
+          vel: 0.9, track: tk, beat: Math.round(cursor) };
         ev.push(e);
         lastEvs.push(e);
       });
+      cursor += beatDur;
+      lastDur = beatDur;
     });
     if (withAccomp) {
       const marks = Object.entries(tr.chordMap)

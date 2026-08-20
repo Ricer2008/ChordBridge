@@ -35,6 +35,15 @@ const T = (x, y, s, size, fill, anchor, weight, extra) =>
 const L = (x1, y1, x2, y2, w, stroke) =>
   `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${stroke}" stroke-width="${w}"/>`;
 
+// 和弦标签：根据 x 位置自动选择对齐方式，防止渲染出界
+function chordLabel(x, y, text, size, C, W) {
+  const estW = text.length * size * 0.62;
+  let anchor = "middle", ax = x;
+  if (x - estW / 2 < 10) { anchor = "start"; ax = 6; }
+  else if (x + estW / 2 > W - 10) { anchor = "end"; ax = W - 6; }
+  return T(ax, y, text, size, C.accent, anchor, "bold");
+}
+
 function accSymbol(acc) { return acc > 0 ? "♯" : acc < 0 ? "♭" : ""; }
 
 function header(x, y, title, keyName, meter, bpm, C, trackName) {
@@ -89,27 +98,41 @@ export function renderJianpu(track, global, tk, perLine) {
   s += header(MARGIN, 30, "简谱", key.name, meter, bpm, C, track.name);
   beats.forEach((beat, bi) => {
     const { x, y } = pos[bi];
-    if (chordMap[bi + 1]) s += T(x, y - 30, chordMap[bi + 1], 13, C.accent, "middle", "bold");
+    if (chordMap[bi + 1]) s += chordLabel(x, y - 30, chordMap[bi + 1], 13, C, W);
     if (beat.isTie) {
-      s += T(x, y, "—", 22, C.dim, "middle", "bold", HL(tk, bi));
+      s += `<line x1="${x - 15}" y1="${y - 2}" x2="${x + 15}" y2="${y - 2}" stroke="${C.fg}" stroke-width="3" stroke-linecap="round" ${HL(tk, bi)}/>`;
       return;
     }
     if (beat.isRest) {
       s += T(x, y, "0", 20, C.dim, "middle", "bold", HL(tk, bi));
+      for (let d = 0; d < (beat.dots || 0); d++)
+        s += `<circle cx="${x + 11 + d * 6}" cy="${y - 6}" r="2.5" fill="${C.dim}"/>`;
       return;
     }
     const n = beat.notes.length;
     beat.notes.forEach((note, ni) => {
       const nx = n === 1 ? x : x + (ni - (n - 1) / 2) * 17;
       const sym = accSymbol(note.acc);
-      if (sym) s += T(nx - 10, y - 8, sym, 12, C.fg);
+      if (sym) s += T(nx - 11, y + 1, sym, 11, C.dim);
       s += T(nx, y, String(note.degree), 20, C.fg, "middle", "bold", HL(tk, bi, ni));
       const dots = jianpuDots(note) + octave;
       for (let d = 1; d <= Math.abs(dots); d++) {
-        const dy = dots > 0 ? -16 - (d - 1) * 6 : 8 + (d - 1) * 6;
-        s += `<circle cx="${nx}" cy="${y + dy}" r="2" fill="${C.fg}"/>`;
+        const dy = dots > 0 ? -18 - (d - 1) * 5 : 12 + (d - 1) * 5;
+        s += `<circle cx="${nx}" cy="${y + dy}" r="2.5" fill="${C.fg}"/>`;
       }
     });
+    // 附点（记在拍右侧）
+    if (beat.dots) {
+      const lastNx = n === 1 ? x : x + ((n - 1) / 2) * 17;
+      for (let d = 0; d < beat.dots; d++)
+        s += `<circle cx="${lastNx + 12 + d * 6}" cy="${y - 6}" r="2.5" fill="${C.fg}"/>`;
+    }
+    // 三连音标记（一拍均分 3 音）
+    if (n === 3) {
+      const x1 = x - 25, x2 = x + 25;
+      s += `<path d="M ${x1} ${y + 12} Q ${x} ${y + 20} ${x2} ${y + 12}" fill="none" stroke="${C.dim}" stroke-width="1"/>` +
+        T(x, y + 32, "3", 10, C.dim, "middle", "bold");
+    }
   });
   bars.forEach((rowBars, r) => {
     const by0 = y0 + r * rowStep - 16, by1 = y0 + r * rowStep + 6;
@@ -175,13 +198,16 @@ export function renderStaff(track, global, tk, perLine) {
 
   beats.forEach((beat, bi) => {
     const { x, y: ty } = pos[bi];
-    if (chordMap[bi + 1]) s += T(x, ty - 22, chordMap[bi + 1], 13, C.accent, "middle", "bold");
+    if (chordMap[bi + 1]) s += chordLabel(x, ty - 22, chordMap[bi + 1], 13, C, W);
     if (beat.isTie) {
-      s += `<line x1="${x - 12}" y1="${lineY(2, ty)}" x2="${x + 12}" y2="${lineY(2, ty)}" stroke="${C.dim}" stroke-width="2.5" ${HL(tk, bi)}/>`;
+      const ty2 = lineY(2, ty);
+      s += `<path d="M ${x-15} ${ty2+3} Q ${x} ${ty2-6} ${x+15} ${ty2+3}" fill="none" stroke="${C.fg}" stroke-width="1.8" ${HL(tk, bi)}/>`;
       return;
     }
     if (beat.isRest) {
       s += T(x, lineY(2, ty) + 6, "𝄽", 30, C.dim, "middle", "normal", HL(tk, bi));
+      for (let d = 0; d < (beat.dots || 0); d++)
+        s += `<circle cx="${x + 12 + d * 5}" cy="${lineY(2, ty)}" r="2.2" fill="${C.dim}"/>`;
       return;
     }
     // 同拍多音：和弦式符头
@@ -198,8 +224,9 @@ export function renderStaff(track, global, tk, perLine) {
         const ly = ty + (topDia - ld) * (SP / 2);
         s += L(x - 9, ly, x + 9, ly, 1, C.dim);
       }
-      if (beat.notes[ni].acc !== 0)
-        s += T(x - 13, y + 4, accSymbol(beat.notes[ni].acc), 14, C.fg);
+      // 调号感知：仅当拼写超出调号覆盖范围才画变音记号
+      if (p.showAcc !== 0)
+        s += T(x - 13, y + 4, accSymbol(p.showAcc), 14, C.fg);
       s += `<ellipse cx="${x}" cy="${y}" rx="5.5" ry="4" fill="${C.fg}" transform="rotate(-15 ${x} ${y})" ${HL(tk, bi, ni)}/>`;
       topY2 = Math.min(topY2, y); botY2 = Math.max(botY2, y);
     });
@@ -207,6 +234,12 @@ export function renderStaff(track, global, tk, perLine) {
     const stemUp = (topY2 + botY2) / 2 >= lineY(2, ty);
     if (stemUp) s += L(x + 5, botY2 - 1, x + 5, topY2 - 30, 1.4, C.fg);
     else s += L(x - 5, topY2 + 1, x - 5, botY2 + 30, 1.4, C.fg);
+    // 附点（符头右侧）
+    for (let d = 0; d < (beat.dots || 0); d++)
+      s += `<circle cx="${x + 13 + d * 5}" cy="${topY2}" r="2.2" fill="${C.fg}"/>`;
+    // 三连音标记（一拍均分 3 音）
+    if (beat.notes.length === 3)
+      s += T(x, ty - 8, "3", 11, C.dim, "middle", "bold");
   });
   bars.forEach((rowBars, r) => {
     const ty = y0 + r * rowStep;
@@ -222,8 +255,8 @@ export function renderTab(track, global, tk, withChords = false, perLine) {
   const { key, meter, bpm, position } = global;
   const C = themeColors();
   const SP = 11;
-  const y0 = withChords ? 150 : 92;
-  const rowStep = withChords ? 205 : 190;
+  const y0 = withChords ? 190 : 92;
+  const rowStep = withChords ? 200 : 190;
   const lineY = (i, ty) => ty + i * SP;
   const x0 = MARGIN + 46;
   const { pos, bars, width, rows } = layout(beats, meter, x0, y0, rowStep, perLine);
@@ -249,16 +282,19 @@ export function renderTab(track, global, tk, withChords = false, perLine) {
   beats.forEach((beat, bi) => {
     const { x, y: ty } = pos[bi];
     if (withChords && chordMap[bi + 1]) {
-      s += drawChordDiagram(chordMap[bi + 1], x, ty - 116, C);
+      const dcx = Math.max(40, Math.min(W - 40, x));
+      s += drawChordDiagram(chordMap[bi + 1], dcx, ty - 116, C);
     } else if (!withChords && chordMap[bi + 1]) {
-      s += T(x, ty - 18, chordMap[bi + 1], 12, C.accent, "middle", "bold");
+      s += chordLabel(x, ty - 18, chordMap[bi + 1], 12, C, W);
     }
     if (beat.isTie) {
-      s += `<line x1="${x - 12}" y1="${lineY(2, ty)}" x2="${x + 12}" y2="${lineY(2, ty)}" stroke="${C.dim}" stroke-width="2.5" ${HL(tk, bi)}/>`;
+      s += `<line x1="${x - 14}" y1="${lineY(2, ty)}" x2="${x + 14}" y2="${lineY(2, ty)}" stroke="${C.fg}" stroke-width="3" stroke-linecap="round" ${HL(tk, bi)}/>`;
       return;
     }
     if (beat.isRest) {
       s += T(x, lineY(2, ty) + 4, "×", 13, C.dim, "middle", "bold", HL(tk, bi));
+      for (let d = 0; d < (beat.dots || 0); d++)
+        s += `<circle cx="${x + 12 + d * 5}" cy="${lineY(2, ty)}" r="2.2" fill="${C.dim}"/>`;
       return;
     }
     beat.notes.forEach((note, ni) => {
@@ -269,6 +305,12 @@ export function renderTab(track, global, tk, withChords = false, perLine) {
       s += `<rect x="${x - 8}" y="${y - 7}" width="16" height="13" fill="${C.card}"/>`;
       s += T(x, y + 4, String(f.fret), 12, f.transposed ? C.accent : C.fg, "middle", "bold", HL(tk, bi, ni));
     });
+    // 附点（数字右侧）
+    for (let d = 0; d < (beat.dots || 0); d++)
+      s += `<circle cx="${x + 12 + d * 5}" cy="${lineY(2, ty)}" r="2.2" fill="${C.fg}"/>`;
+    // 三连音标记（一拍均分 3 音）
+    if (beat.notes.length === 3)
+      s += T(x, lineY(5, ty) + 14, "3", 10, C.dim, "middle", "bold");
   });
   bars.forEach((rowBars, r) => {
     const ty = y0 + r * rowStep;
